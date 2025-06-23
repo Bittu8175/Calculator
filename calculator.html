@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Centered Calculator with Excel Export</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f4f4f4;
+    }
+
+    .container {
+      text-align: center;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input, button {
+      margin: 8px;
+      padding: 10px 20px;
+      font-size: 18px;
+      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #log {
+      list-style: none;
+      padding-left: 0;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .button-group {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Simple Calculator</h2>
+    <input type="number" id="num1" placeholder="First number"><br>
+    <input type="number" id="num2" placeholder="Second number"><br>
+
+    <button onclick="calculate('+')">+</button>
+    <button onclick="calculate('-')">-</button>
+    <button onclick="calculate('*')">*</button>
+    <button onclick="calculate('/')">/</button>
+
+    <h3>Result: <span id="result">0</span></h3>
+
+    <div id="history">
+      <h3>Calculation History</h3>
+      <ul id="log"></ul>
+      <div class="button-group">
+        <button onclick="exportToExcel()">Download as Excel</button>
+        <button onclick="clearHistory()" style="background-color: #dc3545;">Clear Data</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let historyData = [];
+
+    function calculate(operator) {
+      const num1Str = document.getElementById('num1').value.trim();
+      const num2Str = document.getElementById('num2').value.trim();
+
+      const num1 = parseFloat(num1Str);
+      const num2 = parseFloat(num2Str);
+
+      if (isNaN(num1) || isNaN(num2)) {
+        alert("Please enter valid numeric values.");
+        return;
+      }
+
+      let result;
+      switch (operator) {
+        case '+': result = num1 + num2; break;
+        case '-': result = num1 - num2; break;
+        case '*': result = num1 * num2; break;
+        case '/':
+          if (num2 === 0) {
+            alert("Cannot divide by zero.");
+            return;
+          }
+          result = num1 / num2;
+          break;
+      }
+
+      document.getElementById('result').textContent = result;
+      const entry = `${num1} ${operator} ${num2} = ${result}`;
+      historyData.push({ Operand1: num1, Operator: operator, Operand2: num2, Result: result });
+      document.getElementById('log').innerHTML += `<li>${entry}</li>`;
+    }
+
+    function exportToExcel() {
+      if (historyData.length === 0) {
+        alert("No data to export!");
+        return;
+      }
+      const worksheet = XLSX.utils.json_to_sheet(historyData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Calculations");
+      XLSX.writeFile(workbook, "Calculator_History.xlsx");
+    }
+
+    function clearHistory() {
+      historyData = [];
+      document.getElementById('log').innerHTML = '';
+      document.getElementById('result').textContent = '0';
+    }
+  </script>
+
+</body>
+</html>
